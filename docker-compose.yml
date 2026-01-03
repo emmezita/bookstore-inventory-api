@@ -18,5 +18,27 @@ services:
       timeout: 5s
       retries: 5
 
+  api:
+    build: .
+    container_name: bookstore_api
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=django-insecure-docker-dev-key
+      - DB_NAME=bookstore
+      - DB_USER=bookstore_user
+      - DB_PASSWORD=bookstore_password
+      - DB_HOST=db
+      - DB_PORT=5432
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+
 volumes:
   postgres_data:

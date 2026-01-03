@@ -1,0 +1,150 @@
+{
+  "info": {
+    "name": "Bookstore Inventory API",
+    "description": "API REST para gestión de inventario de librerías",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api"
+    }
+  ],
+  "item": [
+    {
+      "name": "Books CRUD",
+      "item": [
+        {
+          "name": "Crear libro",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"El Quijote\",\n  \"author\": \"Miguel de Cervantes\",\n  \"isbn\": \"978-84-376-0494-7\",\n  \"cost_usd\": \"15.99\",\n  \"stock_quantity\": 25,\n  \"category\": \"Literatura Clásica\",\n  \"supplier_country\": \"ES\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/books/",
+              "host": ["{{base_url}}"],
+              "path": ["books", ""]
+            }
+          }
+        },
+        {
+          "name": "Listar libros",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/books/",
+              "host": ["{{base_url}}"],
+              "path": ["books", ""]
+            }
+          }
+        },
+        {
+          "name": "Obtener libro por ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/books/1/",
+              "host": ["{{base_url}}"],
+              "path": ["books", "1", ""]
+            }
+          }
+        },
+        {
+          "name": "Actualizar libro",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"El Quijote - Edición Especial\",\n  \"author\": \"Miguel de Cervantes\",\n  \"isbn\": \"978-84-376-0494-7\",\n  \"cost_usd\": \"18.99\",\n  \"stock_quantity\": 30,\n  \"category\": \"Literatura Clásica\",\n  \"supplier_country\": \"ES\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/books/1/",
+              "host": ["{{base_url}}"],
+              "path": ["books", "1", ""]
+            }
+          }
+        },
+        {
+          "name": "Eliminar libro",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/books/1/",
+              "host": ["{{base_url}}"],
+              "path": ["books", "1", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Búsquedas",
+      "item": [
+        {
+          "name": "Buscar por categoría",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/books/search/?category=Literatura",
+              "host": ["{{base_url}}"],
+              "path": ["books", "search", ""],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "Literatura"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Libros con stock bajo",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/books/low-stock/?threshold=10",
+              "host": ["{{base_url}}"],
+              "path": ["books", "low-stock", ""],
+              "query": [
+                {
+                  "key": "threshold",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cálculo de Precios",
+      "item": [
+        {
+          "name": "Calcular precio de venta",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/books/1/calculate-price/",
+              "host": ["{{base_url}}"],
+              "path": ["books", "1", "calculate-price", ""]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -74,3 +74,13 @@ venv.bak/
 .history
 
 .idea/
+
+# Logs
+logs/
+*.log
+
+# Database
+db.sqlite3
+
+# Docker
+postgres_data/

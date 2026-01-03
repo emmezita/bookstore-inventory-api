@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 
 from .models import Book
 from .serializers import BookSerializer
+from .services import PriceCalculatorService
 
 
 class BookViewSet(viewsets.ModelViewSet):
@@ -20,6 +21,7 @@ class BookViewSet(viewsets.ModelViewSet):
     - DELETE /books/{id}/ - Eliminar un libro
     - GET /books/search/?category={category} - Buscar por categoría
     - GET /books/low-stock/?threshold={n} - Libros con stock bajo
+    - POST /books/{id}/calculate-price/ - Calcular precio de venta
     """
     
     queryset = Book.objects.all()
@@ -76,3 +78,55 @@ class BookViewSet(viewsets.ModelViewSet):
         
         serializer = self.get_serializer(books, many=True)
         return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'], url_path='calculate-price')
+    def calculate_price(self, request, pk=None):
+        """
+        POST /books/{id}/calculate-price/
+        Calcula el precio de venta sugerido basado en tasas de cambio.
+        
+        Query params opcionales:
+        - currency: Código de moneda (default: basado en supplier_country)
+        """
+        try:
+            book = self.get_object()
+        except Exception:
+            return Response(
+                {"error": "Libro no encontrado."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        try:
+            # Calcular precio
+            calculation = PriceCalculatorService.calculate_selling_price(
+                cost_usd=book.cost_usd,
+                country_code=book.supplier_country
+            )
+            
+            # Actualizar el libro con el nuevo precio
+            book.selling_price_local = calculation['selling_price_local']
+            book.save(update_fields=['selling_price_local', 'updated_at'])
+            
+            # Preparar respuesta
+            response_data = {
+                'book_id': book.id,
+                'cost_usd': float(calculation['cost_usd']),
+                'exchange_rate': float(calculation['exchange_rate']),
+                'cost_local': float(calculation['cost_local']),
+                'margin_percentage': calculation['margin_percentage'],
+                'selling_price_local': float(calculation['selling_price_local']),
+                'currency': calculation['currency'],
+                'calculation_timestamp': calculation['calculation_timestamp'].isoformat(),
+            }
+            
+            # Agregar advertencia si se usó tasa por defecto
+            if not calculation['is_live_rate']:
+                response_data['warning'] = 'Se utilizó tasa de cambio por defecto debido a error en API externa.'
+            
+            return Response(response_data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {"error": f"Error al calcular precio: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
